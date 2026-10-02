@@ -175,6 +175,25 @@
             </div>
         </aside>
     </main>
+    <!-- Game End Modal Dialog -->
+    <div id="gameModal" class="modal-overlay hidden">
+        <div class="modal-card">
+            <div id="modalIcon" class="modal-icon victory">
+                <i class="fa-solid fa-trophy"></i>
+            </div>
+            <h2 id="modalTitle">Victory!</h2>
+            <p id="modalMessage">You reached the goal safely!</p>
+            <div class="modal-stats">
+                <div><span>Score</span><b id="modalScore">0</b></div>
+                <div><span>Steps</span><b id="modalSteps">0</b></div>
+                <div><span>Time</span><b id="modalTime">00:00</b></div>
+            </div>
+            <div class="modal-actions">
+                <button id="modalActionBtn" class="btn-primary">Play Again</button>
+                <button id="modalCloseBtn" class="btn-secondary">Close</button>
+            </div>
+        </div>
+    </div>
 </div>
 <script src="js/api.js"></script>
 <script src="js/game.js"></script>

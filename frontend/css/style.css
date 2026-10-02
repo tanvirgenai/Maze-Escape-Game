@@ -421,3 +421,105 @@ canvas#minimap {
     .layout { grid-template-columns: 1fr; }
     .bottom-panels { grid-template-columns: 1fr; }
 }
+
+/* Modal Dialog */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    transition: opacity 0.25s ease;
+}
+.modal-overlay.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+.modal-card {
+    background: var(--card);
+    width: min(90%, 420px);
+    border-radius: 16px;
+    padding: 32px 24px;
+    text-align: center;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+    border: 1px solid var(--line);
+    transform: translateY(0);
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.modal-overlay.hidden .modal-card {
+    transform: translateY(20px) scale(0.95);
+}
+.modal-icon {
+    width: 64px;
+    height: 64px;
+    margin: 0 auto 16px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+}
+.modal-icon.victory {
+    background: #fef3c7;
+    color: #f59e0b;
+}
+.modal-icon.defeat {
+    background: #fee2e2;
+    color: #ef4444;
+}
+.modal-card h2 {
+    font-size: 24px;
+    margin-bottom: 8px;
+    border: none;
+    padding: 0;
+}
+.modal-card p {
+    color: var(--muted);
+    font-size: 14px;
+    margin-bottom: 20px;
+}
+.modal-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 24px;
+    background: #f8fafc;
+    padding: 14px;
+    border-radius: 10px;
+    border: 1px solid var(--line);
+}
+.modal-stats span {
+    font-size: 11px;
+    color: var(--muted);
+    display: block;
+    margin-bottom: 4px;
+}
+.modal-stats b {
+    font-size: 16px;
+    color: var(--text);
+}
+.modal-actions {
+    display: flex;
+    gap: 10px;
+}
+.modal-actions button {
+    flex: 1;
+    padding: 12px;
+    border-radius: 8px;
+    font-weight: 700;
+}
+.modal-actions .btn-primary {
+    background: var(--primary);
+    color: white;
+}
+.modal-actions .btn-secondary {
+    background: #f1f5f9;
+    color: var(--text);
+}
+

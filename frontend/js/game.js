@@ -339,10 +339,16 @@ async function move(direction) {
                 if ($("highScore")) $("highScore").textContent = finalScore;
                 addLog(`NEW HIGH SCORE: ${finalScore}!`);
             }
+            setTimeout(() => {
+                showModal('won', finalScore, state.player_steps, getTimestamp());
+            }, 450);
         } else if (state.status === "lost") {
             playSound('lost');
             addLog("Enemy caught the player! Score: 0");
             if ($("currentScore")) $("currentScore").textContent = "0";
+            setTimeout(() => {
+                showModal('lost', 0, state.player_steps, getTimestamp());
+            }, 450);
         } else {
             playSound('move');
         }
@@ -395,5 +401,64 @@ document.addEventListener("keydown", (event) => {
         move(keys[event.key]);
     }
 });
+
+function showModal(type, score, steps, time) {
+    const modal = $("gameModal");
+    const icon = $("modalIcon");
+    const title = $("modalTitle");
+    const msg = $("modalMessage");
+    const actionBtn = $("modalActionBtn");
+    if (!modal) return;
+
+    if ($("modalScore")) $("modalScore").textContent = score;
+    if ($("modalSteps")) $("modalSteps").textContent = steps;
+    if ($("modalTime")) $("modalTime").textContent = time;
+
+    if (type === 'won') {
+        if (icon) {
+            icon.className = "modal-icon victory";
+            icon.innerHTML = '<i class="fa-solid fa-trophy"></i>';
+        }
+        if (title) title.textContent = "Victory!";
+        if (msg) msg.textContent = "You reached the goal safely!";
+        if (actionBtn) actionBtn.textContent = "Next Level";
+    } else {
+        if (icon) {
+            icon.className = "modal-icon defeat";
+            icon.innerHTML = '<i class="fa-solid fa-ghost"></i>';
+        }
+        if (title) title.textContent = "Caught by Enemy!";
+        if (msg) msg.textContent = "The enemy trapped you. Try another route!";
+        if (actionBtn) actionBtn.textContent = "Try Again";
+    }
+
+    modal.classList.remove("hidden");
+}
+
+function hideModal() {
+    const modal = $("gameModal");
+    if (modal) modal.classList.add("hidden");
+}
+
+if ($("modalActionBtn")) {
+    $("modalActionBtn").addEventListener("click", async () => {
+        hideModal();
+        try {
+            const state = await GameAPI.reset();
+            logs = [];
+            startTimer();
+            addLog("New round started");
+            render(state);
+        } catch (e) {
+            addLog("Reset failed");
+        }
+    });
+}
+
+if ($("modalCloseBtn")) {
+    $("modalCloseBtn").addEventListener("click", () => {
+        hideModal();
+    });
+}
 
 loadGame();
