@@ -145,7 +145,28 @@ button {
 .info-content p { font-size: 13px; color: var(--muted); line-height: 1.6; }
 .info-content strong { color: var(--text); }
 
-/* Controls */
+/* Controls & Difficulty */
+.difficulty-card .diff-buttons {
+    display: flex;
+    gap: 8px;
+}
+.diff-btn {
+    flex: 1;
+    padding: 10px;
+    background: #f8fafc;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    color: var(--muted);
+    font-weight: 600;
+    transition: 0.2s;
+}
+.diff-btn:hover { background: var(--primary-soft); color: var(--primary); }
+.diff-btn.active {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+}
+
 .controls-card { text-align: center; }
 .d-pad-container {
     display: flex;

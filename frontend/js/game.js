@@ -182,11 +182,38 @@ function render(state) {
         pill.style.color = 'var(--primary)';
         pillDot.style.background = 'var(--primary)';
     }
+
+    // Update Difficulty UI
+    if (state.depth) {
+        $("enemyDepthDisplay").textContent = state.depth;
+    }
+    if (state.difficulty) {
+        document.querySelectorAll(".diff-btn").forEach(b => b.classList.remove("active"));
+        const activeBtn = document.querySelector(`.diff-btn[data-diff="${state.difficulty}"]`);
+        if (activeBtn) activeBtn.classList.add("active");
+    }
 }
+
+async function setDifficulty(level) {
+    if (currentState && currentState.status === "running") {
+        try {
+            const state = await GameAPI.setDifficulty(level);
+            addLog(`Difficulty set to ${level.toUpperCase()}`);
+            render(state);
+        } catch (error) {
+            addLog("Error setting difficulty.");
+        }
+    }
+}
+
+document.querySelectorAll(".diff-btn").forEach(btn => {
+    btn.addEventListener("click", () => setDifficulty(btn.dataset.diff));
+});
 
 async function loadGame() {
     try {
         const state = await GameAPI.start();
+
         logs = [];
         startTimer();
         addLog("Game started");

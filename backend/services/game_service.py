@@ -36,19 +36,19 @@ def suggest_player_move():
         if dc == 1: return "RIGHT"
     return None
 
-def predict_enemy(depth=3):
+def predict_enemy():
     _, move = minimax(
         game_state.maze,
         game_state.player,
         game_state.enemy,
         game_state.goal,
-        depth,
+        game_state.depth,
         True
     )
     game_state.predicted_enemy_move = move
     return move
 
-def make_enemy_move(depth=3):
+def make_enemy_move():
     if game_state.status != "running":
         return
 
@@ -57,7 +57,7 @@ def make_enemy_move(depth=3):
         game_state.player,
         game_state.enemy,
         game_state.goal,
-        depth,
+        game_state.depth,
         True
     )
 
@@ -69,6 +69,12 @@ def make_enemy_move(depth=3):
 
     game_state.predicted_enemy_move = move
     update_status()
+
+def set_game_difficulty(level: str):
+    game_state.set_difficulty(level)
+    if game_state.status == "running":
+        game_state.predicted_enemy_move = predict_enemy()
+    return game_state
 
 def reset_game():
     game_state.reset()
@@ -102,7 +108,7 @@ def player_move(direction):
     update_status()
 
     if game_state.status == "running":
-        make_enemy_move(depth=3)
+        make_enemy_move()
 
     calculate_path()
     game_state.suggested_move = suggest_player_move()

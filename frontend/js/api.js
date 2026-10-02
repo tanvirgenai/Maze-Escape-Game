@@ -24,4 +24,5 @@ const GameAPI = {
     reset: () => apiPost("/game/reset"),
     state: () => apiGet("/game/state"),
     move: (direction) => apiPost("/game/move", { direction }),
+    setDifficulty: (level) => apiPost("/game/difficulty", { level }),
 };

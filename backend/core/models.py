@@ -16,6 +16,9 @@ class MinimaxRequest(BaseModel):
     goal: Tuple[int, int]
     depth: int = Field(default=3, ge=1, le=5)
 
+class DifficultyRequest(BaseModel):
+    level: str
+
 class GameStateResponse(BaseModel):
     player: Tuple[int, int]
     enemy: Tuple[int, int]
@@ -27,5 +30,7 @@ class GameStateResponse(BaseModel):
     enemy_steps: int
     status: str
     message: str
+    difficulty: str
+    depth: int
     suggested_move: Optional[str] = None
     predicted_enemy_move: Optional[str] = None

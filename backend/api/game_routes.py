@@ -1,7 +1,7 @@
 from fastapi import APIRouter
-from backend.core.models import MoveRequest
+from backend.core.models import MoveRequest, DifficultyRequest
 from backend.services.game_service import (
-    reset_game, get_state, player_move
+    reset_game, get_state, player_move, set_game_difficulty
 )
 
 router = APIRouter()
@@ -19,6 +19,8 @@ def response():
         "enemy_steps": s.enemy_steps,
         "status": s.status,
         "message": s.message,
+        "difficulty": s.difficulty,
+        "depth": s.depth,
         "suggested_move": s.suggested_move,
         "predicted_enemy_move": s.predicted_enemy_move,
     }
@@ -40,4 +42,9 @@ def state():
 @router.post("/move")
 def move(request: MoveRequest):
     player_move(request.direction)
+    return response()
+
+@router.post("/difficulty")
+def set_difficulty(request: DifficultyRequest):
+    set_game_difficulty(request.level)
     return response()
