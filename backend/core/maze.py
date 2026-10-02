@@ -3,29 +3,31 @@ import random
 def generate_maze(rows=15, cols=15):
     # Initialize maze with all walls
     maze = [[1 for _ in range(cols)] for _ in range(rows)]
-    
-    # Directions for carving paths (jump by 2)
-    dirs = [(0, 2), (0, -2), (2, 0), (-2, 0)]
-    
+
+    DIRS = [(0, 2), (0, -2), (2, 0), (-2, 0)]
+
     def carve_path(r, c):
         maze[r][c] = 0
-        random.shuffle(dirs)
-        for dr, dc in dirs:
+        # Use a local shuffled copy — avoids mutation bug during recursion
+        directions = DIRS[:]
+        random.shuffle(directions)
+        for dr, dc in directions:
             nr, nc = r + dr, c + dc
             if 0 < nr < rows - 1 and 0 < nc < cols - 1 and maze[nr][nc] == 1:
-                maze[r + dr // 2][c + dc // 2] = 0  # Carve wall
+                maze[r + dr // 2][c + dc // 2] = 0
                 carve_path(nr, nc)
-                
-    # Start carving from (1, 1)
+
     carve_path(1, 1)
-    
-    # Ensure goal (13, 13) and enemy start (13, 1) are open (they will be if step=2, but just in case)
-    maze[13][13] = 0
-    maze[13][1] = 0
-    
-    # Randomly remove a few walls to create multiple paths (makes A* and Minimax more interesting)
-    for _ in range(15):
-        rr, rc = random.randint(1, rows-2), random.randint(1, cols-2)
+
+    # Always keep key positions open
+    maze[1][1] = 0    # Player start
+    maze[13][1] = 0   # Enemy start
+    maze[13][13] = 0  # Goal
+
+    # Add extra open cells for multiple paths
+    for _ in range(12):
+        rr = random.randrange(1, rows - 1)
+        rc = random.randrange(1, cols - 1)
         maze[rr][rc] = 0
 
     return maze
