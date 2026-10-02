@@ -1,12 +1,12 @@
 from copy import deepcopy
-from backend.core.maze import DEFAULT_MAZE, START, GOAL, ENEMY_START
+from backend.core.maze import generate_maze, START, GOAL, ENEMY_START
 
 class GameState:
     def __init__(self):
         self.reset()
 
     def reset(self):
-        self.maze = deepcopy(DEFAULT_MAZE)
+        self.maze = generate_maze()
         self.player = START
         self.enemy = ENEMY_START
         self.goal = GOAL
