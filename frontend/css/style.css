@@ -78,6 +78,36 @@ button {
 .enemy-badge { color: var(--enemy); }
 .vs-text { font-weight: 900 !important; color: #cbd5e1; font-size: 16px !important; }
 
+.header-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 6px;
+}
+.sound-toggle-btn {
+    background: #f8fafc;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 6px 12px;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.sound-toggle-btn:hover {
+    color: var(--primary);
+    border-color: var(--primary);
+}
+.sound-toggle-btn.active {
+    color: var(--primary);
+    background: var(--primary-soft);
+    border-color: var(--primary);
+}
+
 .header-right .quote {
     text-align: right;
     font-style: italic;
@@ -272,9 +302,45 @@ button {
 }
 
 /* Character overrides in grid */
-.cell.player { background: var(--primary-soft); color: var(--primary); }
-.cell.enemy { background: var(--enemy-soft); color: var(--enemy); }
-.cell.goal { background: #d1fae5; color: var(--goal); }
+.cell.player {
+    background: var(--primary-soft);
+    color: var(--primary);
+    box-shadow: inset 0 0 8px rgba(59, 130, 246, 0.25);
+}
+.cell.player i {
+    animation: playerPulse 1.2s infinite ease-in-out;
+}
+@keyframes playerPulse {
+    0%, 100% { transform: scale(1); filter: drop-shadow(0 0 2px rgba(59, 130, 246, 0.4)); }
+    50% { transform: scale(1.18); filter: drop-shadow(0 0 6px rgba(59, 130, 246, 0.8)); }
+}
+
+.cell.enemy {
+    background: var(--enemy-soft);
+    color: var(--enemy);
+    box-shadow: inset 0 0 8px rgba(239, 68, 68, 0.25);
+}
+.cell.enemy i {
+    animation: enemyHover 1.4s infinite ease-in-out;
+}
+@keyframes enemyHover {
+    0%, 100% { transform: translateY(0) scale(1); filter: drop-shadow(0 0 2px rgba(239, 68, 68, 0.4)); }
+    50% { transform: translateY(-3px) scale(1.15); filter: drop-shadow(0 0 7px rgba(239, 68, 68, 0.8)); }
+}
+
+.cell.goal {
+    background: #d1fae5;
+    color: var(--goal);
+    box-shadow: inset 0 0 8px rgba(16, 185, 129, 0.25);
+}
+.cell.goal i {
+    animation: goalWave 1.8s infinite ease-in-out;
+}
+@keyframes goalWave {
+    0%, 100% { transform: rotate(0deg); }
+    25% { transform: rotate(10deg); }
+    75% { transform: rotate(-10deg); }
+}
 
 /* Bottom Panels */
 .bottom-panels {

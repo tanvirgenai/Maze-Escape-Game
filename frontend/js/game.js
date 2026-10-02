@@ -4,6 +4,81 @@ let currentState = null;
 let logs = [];
 let timerInterval = null;
 let secondsElapsed = 0;
+let audioCtx = null;
+let soundEnabled = true;
+
+function initAudio() {
+    if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if (audioCtx && audioCtx.state === 'suspended') {
+        audioCtx.resume();
+    }
+}
+
+function playSound(type) {
+    if (!soundEnabled) return;
+    try {
+        initAudio();
+        if (!audioCtx) return;
+        const ctx = audioCtx;
+        const now = ctx.currentTime;
+
+        if (type === 'move') {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(400, now);
+            osc.frequency.exponentialRampToValueAtTime(750, now + 0.07);
+            gain.gain.setValueAtTime(0.08, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.07);
+            osc.start(now);
+            osc.stop(now + 0.07);
+        } else if (type === 'blocked') {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(140, now);
+            osc.frequency.linearRampToValueAtTime(70, now + 0.1);
+            gain.gain.setValueAtTime(0.09, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+            osc.start(now);
+            osc.stop(now + 0.1);
+        } else if (type === 'won') {
+            [523.25, 659.25, 783.99, 1046.50].forEach((freq, idx) => {
+                const noteOsc = ctx.createOscillator();
+                const noteGain = ctx.createGain();
+                noteOsc.connect(noteGain);
+                noteGain.connect(ctx.destination);
+                noteOsc.type = 'sine';
+                noteOsc.frequency.setValueAtTime(freq, now + idx * 0.09);
+                noteGain.gain.setValueAtTime(0.12, now + idx * 0.09);
+                noteGain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.09 + 0.25);
+                noteOsc.start(now + idx * 0.09);
+                noteOsc.stop(now + idx * 0.09 + 0.25);
+            });
+        } else if (type === 'lost') {
+            [280, 220, 160, 110].forEach((freq, idx) => {
+                const noteOsc = ctx.createOscillator();
+                const noteGain = ctx.createGain();
+                noteOsc.connect(noteGain);
+                noteGain.connect(ctx.destination);
+                noteOsc.type = 'sawtooth';
+                noteOsc.frequency.setValueAtTime(freq, now + idx * 0.11);
+                noteGain.gain.setValueAtTime(0.11, now + idx * 0.11);
+                noteGain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.11 + 0.2);
+                noteOsc.start(now + idx * 0.11);
+                noteOsc.stop(now + idx * 0.11 + 0.2);
+            });
+        }
+    } catch (e) {
+        // Fallback gracefully
+    }
+}
 
 function startTimer() {
     clearInterval(timerInterval);
@@ -248,7 +323,11 @@ async function move(direction) {
     try {
         const state = await GameAPI.move(direction);
         addLog(state.message);
-        if (state.status === "won") {
+        
+        if (state.message.toLowerCase().includes("blocked")) {
+            playSound('blocked');
+        } else if (state.status === "won") {
+            playSound('won');
             const diffMultiplier = state.difficulty === "hard" ? 2.0 : state.difficulty === "easy" ? 1.0 : 1.5;
             const baseScore = Math.max(100, 1500 - (state.player_steps * 20) - (secondsElapsed * 5));
             const finalScore = Math.round(baseScore * diffMultiplier);
@@ -260,15 +339,31 @@ async function move(direction) {
                 if ($("highScore")) $("highScore").textContent = finalScore;
                 addLog(`NEW HIGH SCORE: ${finalScore}!`);
             }
-        }
-        if (state.status === "lost") {
+        } else if (state.status === "lost") {
+            playSound('lost');
             addLog("Enemy caught the player! Score: 0");
             if ($("currentScore")) $("currentScore").textContent = "0";
+        } else {
+            playSound('move');
         }
         render(state);
     } catch (error) {
         addLog(error.message);
     }
+}
+
+const soundToggle = $("soundToggle");
+if (soundToggle) {
+    soundToggle.addEventListener("click", () => {
+        soundEnabled = !soundEnabled;
+        if (soundEnabled) {
+            soundToggle.classList.add("active");
+            soundToggle.innerHTML = '<i class="fa-solid fa-volume-high"></i> <span>Sound ON</span>';
+        } else {
+            soundToggle.classList.remove("active");
+            soundToggle.innerHTML = '<i class="fa-solid fa-volume-xmark"></i> <span>Sound OFF</span>';
+        }
+    });
 }
 
 $("resetBtn").addEventListener("click", async () => {
