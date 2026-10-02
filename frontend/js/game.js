@@ -80,12 +80,36 @@ function playSound(type) {
     }
 }
 
+let isGameStarted = false;
+
+function updateStartBtn() {
+    const btn = $("startGameBtn");
+    if (!btn) return;
+    if (!isGameStarted) {
+        btn.classList.remove("in-progress");
+        btn.innerHTML = '<i class="fa-solid fa-play"></i> <span>START GAME</span>';
+    } else if (currentState && currentState.status === "running") {
+        btn.classList.add("in-progress");
+        btn.innerHTML = '<i class="fa-solid fa-gamepad"></i> <span>GAME IN PROGRESS</span>';
+    } else {
+        btn.classList.remove("in-progress");
+        btn.innerHTML = '<i class="fa-solid fa-rotate-right"></i> <span>PLAY AGAIN</span>';
+    }
+}
+
+function ensureGameStarted() {
+    if (!isGameStarted) {
+        isGameStarted = true;
+        startTimer();
+        updateStartBtn();
+        addLog("Game started! Timer & score active.");
+    }
+}
+
 function startTimer() {
     clearInterval(timerInterval);
-    secondsElapsed = 0;
-    updateTimerDisplay();
     timerInterval = setInterval(() => {
-        if (currentState && currentState.status === "running") {
+        if (isGameStarted && currentState && currentState.status === "running") {
             secondsElapsed++;
             updateTimerDisplay();
         }
@@ -96,6 +120,7 @@ let isAutoMode = false;
 let autoInterval = null;
 
 function startAutoMode() {
+    ensureGameStarted();
     isAutoMode = true;
     const btn = $("autoMoveBtn");
     if (btn) {
@@ -111,10 +136,14 @@ function startAutoMode() {
             const state = await GameAPI.autoMove();
             addLog(`[AUTO] ${state.message}`);
             if (state.status === "won") {
+                isGameStarted = false;
+                clearInterval(timerInterval);
                 playSound('won');
                 setTimeout(() => showModal('won', parseInt($("currentScore").textContent || "0"), state.player_steps, getTimestamp()), 450);
             }
             if (state.status === "lost") {
+                isGameStarted = false;
+                clearInterval(timerInterval);
                 playSound('lost');
                 setTimeout(() => showModal('lost', 0, state.player_steps, getTimestamp()), 450);
             }
@@ -159,7 +188,9 @@ function updateScoreDisplay() {
         return;
     }
     const diffMultiplier = currentState.difficulty === "hard" ? 2.0 : currentState.difficulty === "easy" ? 1.0 : 1.5;
-    const baseScore = Math.max(100, 1500 - (currentState.player_steps * 20) - (secondsElapsed * 5));
+    const elapsed = isGameStarted ? secondsElapsed : 0;
+    const steps = isGameStarted ? currentState.player_steps : 0;
+    const baseScore = Math.max(100, 1500 - (steps * 20) - (elapsed * 5));
     const score = Math.round(baseScore * diffMultiplier);
     if ($("currentScore")) $("currentScore").textContent = score;
 }
@@ -342,6 +373,7 @@ function render(state) {
     }
 
     updateScoreDisplay();
+    updateStartBtn();
 }
 
 async function setDifficulty(level) {
@@ -365,8 +397,12 @@ async function loadGame() {
         const state = await GameAPI.start();
 
         logs = [];
-        startTimer();
-        addLog("Game started");
+        isGameStarted = false;
+        clearInterval(timerInterval);
+        secondsElapsed = 0;
+        updateTimerDisplay();
+        updateStartBtn();
+        addLog("Game ready - Press Start or use arrow keys/WASD!");
         render(state);
     } catch (error) {
         addLog("Backend not connected.");
@@ -375,6 +411,7 @@ async function loadGame() {
 
 async function move(direction) {
     if (!currentState || currentState.status !== "running") return;
+    ensureGameStarted();
     try {
         const state = await GameAPI.move(direction);
         addLog(state.message);
@@ -382,6 +419,8 @@ async function move(direction) {
         if (state.message.toLowerCase().includes("blocked")) {
             playSound('blocked');
         } else if (state.status === "won") {
+            isGameStarted = false;
+            clearInterval(timerInterval);
             playSound('won');
             const diffMultiplier = state.difficulty === "hard" ? 2.0 : state.difficulty === "easy" ? 1.0 : 1.5;
             const baseScore = Math.max(100, 1500 - (state.player_steps * 20) - (secondsElapsed * 5));
@@ -398,6 +437,8 @@ async function move(direction) {
                 showModal('won', finalScore, state.player_steps, getTimestamp());
             }, 450);
         } else if (state.status === "lost") {
+            isGameStarted = false;
+            clearInterval(timerInterval);
             playSound('lost');
             addLog("Enemy caught the player! Score: 0");
             if ($("currentScore")) $("currentScore").textContent = "0";
@@ -431,13 +472,42 @@ $("resetBtn").addEventListener("click", async () => {
     try {
         const state = await GameAPI.reset();
         logs = [];
-        startTimer();
-        addLog("Game reset");
+        isGameStarted = false;
+        stopAutoMode();
+        clearInterval(timerInterval);
+        secondsElapsed = 0;
+        updateTimerDisplay();
+        updateStartBtn();
+        addLog("Game reset - Press Start or move to begin!");
         render(state);
     } catch (error) {
         addLog("Error resetting game.");
     }
 });
+
+const startGameBtn = $("startGameBtn");
+if (startGameBtn) {
+    startGameBtn.addEventListener("click", async () => {
+        if (!currentState || currentState.status !== "running") {
+            try {
+                const state = await GameAPI.reset();
+                logs = [];
+                isGameStarted = true;
+                stopAutoMode();
+                secondsElapsed = 0;
+                startTimer();
+                updateTimerDisplay();
+                updateStartBtn();
+                addLog("New game started!");
+                render(state);
+            } catch (e) {
+                addLog("Failed to start game.");
+            }
+        } else {
+            ensureGameStarted();
+        }
+    });
+}
 
 document.querySelectorAll("[data-move]").forEach(btn => {
     btn.addEventListener("click", () => move(btn.dataset.move));
@@ -501,8 +571,13 @@ if ($("modalActionBtn")) {
         try {
             const state = await GameAPI.reset();
             logs = [];
-            startTimer();
-            addLog("New round started");
+            isGameStarted = false;
+            stopAutoMode();
+            clearInterval(timerInterval);
+            secondsElapsed = 0;
+            updateTimerDisplay();
+            updateStartBtn();
+            addLog("New round ready - Press Start or move to begin!");
             render(state);
         } catch (e) {
             addLog("Reset failed");
