@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Maze Escape</title>
+    <link rel="stylesheet" href="css/style.css">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+<div class="app">
+    <!-- Top Header -->
+    <header class="topbar">
+        <div class="header-left">
+            <div class="logo">
+                <i class="fa-solid fa-maze"></i>
+            </div>
+            <div>
+                <h1>AI MAZE ESCAPE</h1>
+                <p>Reach the goal while avoiding the enemy.</p>
+            </div>
+        </div>
+        <div class="header-center">
+            <div class="vs-badge">
+                <span class="player-badge"><i class="fa-solid fa-person-running"></i> You (A*) <span>Find the best path</span></span>
+                <span class="vs-text">VS</span>
+                <span class="enemy-badge"><i class="fa-solid fa-ghost"></i> Enemy (Minimax) <span>Tries to catch you</span></span>
+            </div>
+        </div>
+        <div class="header-right">
+            <p class="quote">"Plan smart.<br>Move wisely.<br>Reach the goal."</p>
+        </div>
+    </header>
+
+    <main class="layout">
+        <!-- Left Sidebar -->
+        <aside class="sidebar-left">
+            <div class="card">
+                <h2>Game Status</h2>
+                <div class="stats">
+                    <div class="stat-row"><i class="fa-regular fa-clock"></i> <span>Time Elapsed</span><b id="timeElapsed">00:00</b></div>
+                    <div class="stat-row"><i class="fa-solid fa-shoe-prints"></i> <span>Player Steps</span><b id="playerSteps">0</b></div>
+                    <div class="stat-row"><i class="fa-solid fa-ghost"></i> <span>Enemy Steps</span><b id="enemySteps">0</b></div>
+                    <div class="stat-row"><i class="fa-solid fa-route"></i> <span>Distance to Goal</span><b id="distGoal">0</b></div>
+                    <div class="stat-row"><i class="fa-solid fa-people-arrows"></i> <span>Distance to Enemy</span><b id="distEnemy">0</b></div>
+                    <div class="stat-row"><i class="fa-solid fa-gamepad"></i> <span>Status</span><span class="status-indicator" id="statusPill"><span class="dot"></span><b id="statusText">Running</b></span></div>
+                </div>
+            </div>
+
+            <div class="card info-card player-info">
+                <h2>Algorithm Info (Player)</h2>
+                <div class="info-content">
+                    <i class="fa-solid fa-person-running fa-2x"></i>
+                    <div>
+                        <p>Algorithm: <strong>A*</strong></p>
+                        <p>Heuristic: Manhattan Distance</p>
+                        <p>Goal: Reach the goal</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card info-card enemy-info">
+                <h2>Enemy Info</h2>
+                <div class="info-content">
+                    <i class="fa-solid fa-ghost fa-2x"></i>
+                    <div>
+                        <p>Algorithm: <strong>Minimax</strong></p>
+                        <p>Search Depth: 3</p>
+                        <p>Goal: Catch the player</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card controls-card">
+                <h2>Controls</h2>
+                <div class="d-pad-container">
+                    <div class="d-pad">
+                        <button data-move="UP" class="btn-up"><i class="fa-solid fa-arrow-up"></i></button>
+                        <button data-move="LEFT" class="btn-left"><i class="fa-solid fa-arrow-left"></i></button>
+                        <button data-move="DOWN" class="btn-down"><i class="fa-solid fa-arrow-down"></i></button>
+                        <button data-move="RIGHT" class="btn-right"><i class="fa-solid fa-arrow-right"></i></button>
+                    </div>
+                    <div class="controls-text">
+                        <p>Move<br><small>(Arrow Keys)</small></p>
+                        <p>or</p>
+                        <p class="wasd"><span>W</span><span>A</span><span>S</span><span>D</span></p>
+                    </div>
+                </div>
+                <button class="btn-reset" id="resetBtn"><i class="fa-solid fa-rotate-right"></i> Reset</button>
+            </div>
+        </aside>
+
+        <!-- Center Main Content -->
+        <section class="main-center">
+            <div class="maze-container">
+                <div class="maze-header">
+                    <!-- Column numbers will be injected by JS -->
+                    <div class="col-labels" id="colLabels"></div>
+                </div>
+                <div class="maze-body">
+                    <!-- Row numbers will be injected by JS -->
+                    <div class="row-labels" id="rowLabels"></div>
+                    <div id="maze" class="maze"></div>
+                </div>
+            </div>
+
+            <div class="bottom-panels">
+                <div class="card action-log-card">
+                    <h2>Action Log</h2>
+                    <div id="log" class="log"></div>
+                </div>
+                <div class="card prediction-card">
+                    <h2>Next Move Prediction (Minimax)</h2>
+                    <div class="prediction-content">
+                        <div class="pred-d-pad">
+                            <i class="fa-solid fa-arrow-up" id="pred-up"></i>
+                            <i class="fa-solid fa-arrow-left" id="pred-left"></i>
+                            <i class="fa-solid fa-ghost"></i>
+                            <i class="fa-solid fa-arrow-right" id="pred-right"></i>
+                            <i class="fa-solid fa-arrow-down" id="pred-down"></i>
+                        </div>
+                        <div class="pred-text">
+                            <p>Enemy is planning...</p>
+                            <small>(keeps distance while approaching)</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Right Sidebar -->
+        <aside class="sidebar-right">
+            <div class="card legend-card">
+                <h2>Legend</h2>
+                <ul>
+                    <li><i class="fa-solid fa-person-running player-icon"></i> Player (You)</li>
+                    <li><i class="fa-solid fa-ghost enemy-icon"></i> Enemy (Minimax)</li>
+                    <li><i class="fa-solid fa-flag goal-icon"></i> Goal</li>
+                    <li><span class="legend-box wall"></span> Wall</li>
+                    <li><span class="legend-box empty"></span> Empty Cell</li>
+                    <li><span class="legend-box explored"></span> Explored (A*)</li>
+                    <li><span class="legend-box path"></span> A* Current Path</li>
+                </ul>
+            </div>
+
+            <div class="card minimap-card">
+                <h2>Minimap</h2>
+                <div class="minimap-container">
+                    <canvas id="minimap"></canvas>
+                </div>
+            </div>
+
+            <div class="card pos-card">
+                <h2>Current Position</h2>
+                <div class="stats">
+                    <div class="stat-row"><i class="fa-solid fa-person-running player-icon"></i> <span>Player (You)</span><b id="playerPos">-</b></div>
+                    <div class="stat-row"><i class="fa-solid fa-ghost enemy-icon"></i> <span>Enemy</span><b id="enemyPos">-</b></div>
+                    <div class="stat-row"><i class="fa-solid fa-flag goal-icon"></i> <span>Goal</span><b id="goalPos">-</b></div>
+                </div>
+            </div>
+        </aside>
+    </main>
+</div>
+<script src="js/api.js"></script>
+<script src="js/game.js"></script>
+</body>
+</html>
