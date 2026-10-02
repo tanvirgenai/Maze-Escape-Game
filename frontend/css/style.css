@@ -246,6 +246,22 @@ button {
     color: white;
     border-radius: 8px;
     font-weight: 700;
+    margin-bottom: 8px;
+}
+.btn-auto {
+    width: 100%;
+    padding: 10px;
+    background: #f1f5f9;
+    color: var(--muted);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    font-weight: 700;
+    transition: 0.2s;
+}
+.btn-auto.active {
+    background: var(--goal);
+    color: white;
+    border-color: var(--goal);
 }
 
 /* Center Main - Maze */

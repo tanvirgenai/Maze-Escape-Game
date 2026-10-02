@@ -92,6 +92,61 @@ function startTimer() {
     }, 1000);
 }
 
+let isAutoMode = false;
+let autoInterval = null;
+
+function startAutoMode() {
+    isAutoMode = true;
+    const btn = $("autoMoveBtn");
+    if (btn) {
+        btn.classList.add("active");
+        btn.innerHTML = '<i class="fa-solid fa-robot"></i> Auto Mode: ON';
+    }
+    autoInterval = setInterval(async () => {
+        if (!currentState || currentState.status !== "running") {
+            stopAutoMode();
+            return;
+        }
+        try {
+            const state = await GameAPI.autoMove();
+            addLog(`[AUTO] ${state.message}`);
+            if (state.status === "won") {
+                playSound('won');
+                setTimeout(() => showModal('won', parseInt($("currentScore").textContent || "0"), state.player_steps, getTimestamp()), 450);
+            }
+            if (state.status === "lost") {
+                playSound('lost');
+                setTimeout(() => showModal('lost', 0, state.player_steps, getTimestamp()), 450);
+            }
+            render(state);
+        } catch (e) {
+            stopAutoMode();
+        }
+    }, 500);
+}
+
+function stopAutoMode() {
+    isAutoMode = false;
+    clearInterval(autoInterval);
+    autoInterval = null;
+    const btn = $("autoMoveBtn");
+    if (btn) {
+        btn.classList.remove("active");
+        btn.innerHTML = '<i class="fa-solid fa-robot"></i> Auto Mode: OFF';
+    }
+}
+
+if ($("autoMoveBtn")) {
+    $("autoMoveBtn").addEventListener("click", () => {
+        if (isAutoMode) {
+            stopAutoMode();
+        } else {
+            startAutoMode();
+        }
+    });
+}
+
+
 function getHighScore() {
     return parseInt(localStorage.getItem("ai_maze_high_score") || "0", 10);
 }

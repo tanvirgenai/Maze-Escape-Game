@@ -117,3 +117,15 @@ def player_move(direction):
         game_state.predicted_enemy_move = predict_enemy()
 
     return game_state
+
+def auto_player_move():
+    """A* algorithm er best move automatically play kore."""
+    if game_state.status != "running":
+        return get_state()
+
+    best_move = suggest_player_move()
+
+    if best_move:
+        return player_move(best_move)
+
+    return get_state()
