@@ -118,6 +118,8 @@ button {
     margin-bottom: 14px;
 }
 .stat-row i { width: 16px; color: var(--primary); text-align: center; }
+.stat-row i.score-icon { color: #f59e0b; }
+.stat-row i.trophy-icon { color: #eab308; }
 .stat-row span { flex: 1; color: var(--muted); }
 .stat-row b { font-weight: 600; }
 

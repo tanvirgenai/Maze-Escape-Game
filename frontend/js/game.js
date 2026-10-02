@@ -17,10 +17,28 @@ function startTimer() {
     }, 1000);
 }
 
+function getHighScore() {
+    return parseInt(localStorage.getItem("ai_maze_high_score") || "0", 10);
+}
+
+function updateScoreDisplay() {
+    const highScore = getHighScore();
+    if ($("highScore")) $("highScore").textContent = highScore;
+    if (!currentState) {
+        if ($("currentScore")) $("currentScore").textContent = "0";
+        return;
+    }
+    const diffMultiplier = currentState.difficulty === "hard" ? 2.0 : currentState.difficulty === "easy" ? 1.0 : 1.5;
+    const baseScore = Math.max(100, 1500 - (currentState.player_steps * 20) - (secondsElapsed * 5));
+    const score = Math.round(baseScore * diffMultiplier);
+    if ($("currentScore")) $("currentScore").textContent = score;
+}
+
 function updateTimerDisplay() {
     const mins = String(Math.floor(secondsElapsed / 60)).padStart(2, '0');
     const secs = String(secondsElapsed % 60).padStart(2, '0');
     $("timeElapsed").textContent = `${mins}:${secs}`;
+    updateScoreDisplay();
 }
 
 function getTimestamp() {
@@ -192,6 +210,8 @@ function render(state) {
         const activeBtn = document.querySelector(`.diff-btn[data-diff="${state.difficulty}"]`);
         if (activeBtn) activeBtn.classList.add("active");
     }
+
+    updateScoreDisplay();
 }
 
 async function setDifficulty(level) {
@@ -228,8 +248,23 @@ async function move(direction) {
     try {
         const state = await GameAPI.move(direction);
         addLog(state.message);
-        if (state.status === "won") addLog("Player reached the goal!");
-        if (state.status === "lost") addLog("Enemy caught the player!");
+        if (state.status === "won") {
+            const diffMultiplier = state.difficulty === "hard" ? 2.0 : state.difficulty === "easy" ? 1.0 : 1.5;
+            const baseScore = Math.max(100, 1500 - (state.player_steps * 20) - (secondsElapsed * 5));
+            const finalScore = Math.round(baseScore * diffMultiplier);
+            const prevHighScore = getHighScore();
+
+            addLog(`Player reached the goal! Score: ${finalScore} pts`);
+            if (finalScore > prevHighScore) {
+                localStorage.setItem("ai_maze_high_score", finalScore.toString());
+                if ($("highScore")) $("highScore").textContent = finalScore;
+                addLog(`NEW HIGH SCORE: ${finalScore}!`);
+            }
+        }
+        if (state.status === "lost") {
+            addLog("Enemy caught the player! Score: 0");
+            if ($("currentScore")) $("currentScore").textContent = "0";
+        }
         render(state);
     } catch (error) {
         addLog(error.message);
